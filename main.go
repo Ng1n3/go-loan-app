@@ -49,8 +49,17 @@ func main() {
 			}
 
 		case 2:
-      fmt.Println("Enter the account holder's account number to check loan status: ")
-      
+			fmt.Println()
+
+			accountNumber := getAccountDetails("Enter the account holder's account number to check loan status: ")
+
+			account, err := fileops.CheckAccountByAccountNumber(accountNumber)
+
+			if err != nil {
+				fmt.Printf("Error: %v\n", err)
+        continue
+			}
+
 			account.CheckLoanStatus()
 		case 7:
 			fmt.Printf("Goodbye!\nWe can't wait to see you again, Go Loan Bank.")
