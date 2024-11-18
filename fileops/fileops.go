@@ -3,7 +3,9 @@ package fileops
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
+	"strings"
 
 	"example.com/loan/account"
 )
@@ -69,4 +71,33 @@ func CheckAccountByAccountNumber(accountNumber string) (*account.Account, error)
 
 	//if no record of account is found, return an error
 	return nil, errors.New("account not found")
+}
+
+func GetAcountNumberByFirstName(firstName string) (*account.Account, error) {
+	firstName = strings.ToLower(firstName)
+
+	data, err := os.ReadFile(filename)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// declare a slice to hold all accounts
+	var accounts []account.Account
+
+	// Parse the JSON data into the slice
+	err = json.Unmarshal(data, &accounts)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, acc := range accounts {
+		if acc.Firstname == firstName {
+			fmt.Printf("Your account number is %v\n", acc.AccountNumber)
+			return &acc, nil
+		}
+	}
+
+	return nil, errors.New("account not found")
+
 }
