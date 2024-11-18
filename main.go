@@ -98,6 +98,11 @@ func getAccountData() (string, string, string, string, error) {
 	lastName := getAccountDetails("Last name: ")
 	phoneNumber := getAccountDetails("Phone number: ")
 	accountNumber := randomdata.StringNumber(4, "")
+  
+  //convert to lowerCase
+  firstName = strings.ToLower(firstName)
+  lastName = strings.ToLower(lastName)
+
 
 	err := account.CheckPhoneNumber(phoneNumber)
 
