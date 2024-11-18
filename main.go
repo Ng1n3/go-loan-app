@@ -49,7 +49,9 @@ func main() {
 			}
 
 		case 2:
-			fmt.Println("Sorry currently unavailable")
+      fmt.Println("Enter the account holder's account number to check loan status: ")
+      
+			account.CheckLoanStatus()
 		case 7:
 			fmt.Printf("Goodbye!\nWe can't wait to see you again, Go Loan Bank.")
 			return

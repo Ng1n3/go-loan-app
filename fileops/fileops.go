@@ -2,18 +2,71 @@ package fileops
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
+
 	"example.com/loan/account"
 )
 
-func WriteToFile(account account.Account) error {
-  filename := "account.json"
+const filename = "account.json"
 
-  json, err := json.Marshal(account)
+func WriteToFile(newAccount account.Account) error {
 
-  if err != nil {
-    return err
-  }
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		//If the file doesn't exist, create a new one with an array
+		if os.IsNotExist(err) {
+			accounts := []account.Account{newAccount}
+			jsonData, err := json.MarshalIndent(accounts, "", " ")
+			if err != nil {
+				return err
+			}
+			return os.WriteFile(filename, jsonData, 0644)
+		}
+		return err
+	}
 
-  return os.WriteFile(filename, json, 0644)
+	//unMarshal existing data into a slice
+	var accounts []account.Account
+	err = json.Unmarshal(data, &accounts)
+	if err != nil {
+		return err
+	}
+
+	accounts = append(accounts, newAccount)
+
+	// Marshal the updated slice back to JSON
+	jsonData, err := json.MarshalIndent(accounts, "", " ")
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(filename, jsonData, 0644)
+}
+
+func CheckAccountByAccountNumber(accountNumber string) (*account.Account, error) {
+	data, err := os.ReadFile(filename)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// declare a slice to hold all accounts
+	var accounts []account.Account
+
+	// Parse the JSON data into the slice
+	err = json.Unmarshal(data, &accounts)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, acc := range accounts {
+		if acc.AccountNumber == accountNumber {
+			// return all matching account
+			return &acc, nil
+		}
+	}
+
+	//if no record of account is found, return an error
+	return nil, errors.New("account not found")
 }
