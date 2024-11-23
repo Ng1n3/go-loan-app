@@ -12,38 +12,35 @@ import (
 
 const filename = "account.json"
 
-func WriteToFile(newAccount account.Account) error {
-
-	data, err := os.ReadFile(filename)
-	if err != nil {
-		//If the file doesn't exist, create a new one with an array
-		if os.IsNotExist(err) {
-			accounts := []account.Account{newAccount}
-			jsonData, err := json.MarshalIndent(accounts, "", " ")
-			if err != nil {
-				return err
-			}
-			return os.WriteFile(filename, jsonData, 0644)
-		}
-		return err
-	}
-
-	//unMarshal existing data into a slice
+func WriteToFile(newAccountInfo account.Account) error {
 	var accounts []account.Account
-	err = json.Unmarshal(data, &accounts)
-	if err != nil {
-		return err
+
+	existingAccountFile, err := os.ReadFile(filename)
+	if err == nil {
+		err = json.Unmarshal(existingAccountFile, &accounts)
+
+		if err != nil {
+			return errors.New("failed to parse existing account")
+		}
 	}
 
-	accounts = append(accounts, newAccount)
+	accounts = append(accounts, newAccountInfo)
 
-	// Marshal the updated slice back to JSON
-	jsonData, err := json.MarshalIndent(accounts, "", " ")
+	file, err := os.Create(filename)
 	if err != nil {
-		return err
+		return errors.New("failed to create file")
 	}
+	defer file.Close()
 
-	return os.WriteFile(filename, jsonData, 0644)
+	encoder := json.NewEncoder(file)
+	encoder.SetIndent("", " ")
+
+	err = encoder.Encode(accounts)
+	if err != nil {
+		return errors.New("failed to convert data to JSON")
+	}
+	return nil
+	
 }
 
 func CheckAccountByAccountNumber(accountNumber string) (*account.Account, error) {
@@ -82,7 +79,6 @@ func GetAcountNumberByFirstName(firstName string) (*account.Account, error) {
 		return nil, err
 	}
 
-	// declare a slice to hold all accounts
 	var accounts []account.Account
 
 	// Parse the JSON data into the slice
@@ -100,4 +96,50 @@ func GetAcountNumberByFirstName(firstName string) (*account.Account, error) {
 
 	return nil, errors.New("account not found")
 
+}
+
+func DeleteAccountbyAccountNumber(accountNumber string) error {
+  data, err := os.ReadFile(filename)
+
+	if err != nil {
+		return  err
+	}
+
+	// declare a slice to hold all accounts
+	var accounts []account.Account
+
+	// Parse the JSON data into the slice
+	err = json.Unmarshal(data, &accounts)
+	if err != nil {
+		return  err
+	}
+
+	var updatedAccounts []account.Account
+	accountFound := false
+
+	for _, acc := range accounts {
+		if acc.AccountNumber == accountNumber {
+			accountFound = true
+			continue
+		}
+		updatedAccounts = append(updatedAccounts, acc)
+	}
+
+	if !accountFound {
+		return errors.New("account not found")
+	}
+
+	// convert the updated slice back to JSON
+	updatedData, err := json.MarshalIndent(updatedAccounts, "", " ")
+	if err != nil {
+		return err
+	}
+
+	err = os.WriteFile(filename, updatedData, 0644)
+	if err != nil {
+		return err
+	}
+
+	//if no record of account is found, return an error
+	return nil
 }
