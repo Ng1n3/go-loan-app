@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"example.com/loan/account"
+	"loan/account"
 )
 
 const filename = "account.json"
@@ -142,4 +142,67 @@ func DeleteAccountbyAccountNumber(accountNumber string) error {
 
 	//if no record of account is found, return an error
 	return nil
+}
+
+func UpdateAccount (updatedAccount account.Account) error {
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		return err
+	}
+
+	var accounts []account.Account
+	err = json.Unmarshal(data, &accounts)
+	if err != nil {
+		return err
+	}
+
+	for index, acc := range accounts {
+		if acc.AccountNumber == updatedAccount.AccountNumber {
+			accounts[index] = updatedAccount
+			break
+		}
+	}
+
+	updatedData, err := json.MarshalIndent(accounts,"", " ")
+	if err != nil {
+		return err
+	}
+
+	err = os.WriteFile(filename, updatedData, 0644)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func GiveLoan(accountNumber string, loanAmount float64) error {
+	// check if given account is correct
+	acc, err := CheckAccountByAccountNumber(accountNumber)
+	if err != nil {
+		return fmt.Errorf("account not found : %w", err)
+	}
+
+	//check loan conditions
+	if acc.LoanStatus {
+		return errors.New("Loan cannot be issued: outstanding loans exists")
+	}
+
+	if loanAmount > acc.LoanAmountAvailable {
+		return errors.New("requested loan amount exceeds available limit")
+	}
+
+	// update account details
+	acc.LoanStatus = true
+	acc.CurrentLoan = loanAmount
+	acc.LoanAmountAvailable -= loanAmount
+	acc.NumberOfLoans++
+
+	err = UpdateAccount(*acc)
+	if err != nil {
+		return fmt.Errorf("failed to update account: %w", err)
+	}
+
+	fmt.Printf("Loan of %.2f granted successfully to %s.\n", loanAmount, acc.Firstname)
+return nil
 }

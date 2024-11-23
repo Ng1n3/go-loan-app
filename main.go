@@ -1,8 +1,8 @@
 package main
 
 import (
-	"example.com/loan/menu"
 	"fmt"
+	"loan/menu"
 )
 
 func main() {

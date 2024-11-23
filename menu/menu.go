@@ -1,15 +1,16 @@
 package menu
 
 import (
-    "bufio"
-    "errors"
-    "fmt"
-    "os"
-    "strings"
+	"bufio"
+	"errors"
+	"fmt"
+	"os"
+	"strconv"
+	"strings"
 
-    "example.com/loan/account"
-    "example.com/loan/fileops"
-    "github.com/Pallinder/go-randomdata"
+	"loan/account"
+	"loan/fileops"
+	"github.com/Pallinder/go-randomdata"
 )
 
 func Choice() {
@@ -62,6 +63,30 @@ func Choice() {
             }
 
             acc.CheckLoanStatus()
+          case 3:
+            accountNumber, err := getAccountDetails("Enter the account holder's account number to close: ")
+            if err != nil {
+              fmt.Printf("Error geting account number: %v\n", err)
+              continue
+            }
+
+            loanAmountStr, err := getAccountDetails("Enter the amount of loan neede: ")
+            if err != nil {
+              fmt.Printf("error getting the required loan amount %v\n", err)
+              continue
+            }
+
+            loanAMount, err := strconv.ParseFloat(loanAmountStr, 64)
+            if err != nil || loanAMount <= 0 {
+              fmt.Println("Invalid amount enterd")
+              continue
+            }
+
+            err = fileops.GiveLoan(accountNumber, loanAMount)
+            if err != nil {
+              fmt.Printf("error: %v\n", err)
+            }
+
 
         case 5:
             accountNumber, err := getAccountDetails("Enter the account holder's account number to close: ")

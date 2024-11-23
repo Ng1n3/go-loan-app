@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"time"
-
-	"github.com/Pallinder/go-randomdata"
+	// "loan/fileops"
 )
 
 type Account struct {
@@ -41,8 +40,8 @@ func New(firstName, lastName, phoneNumber, accountNumber string) (Account, error
 }
 
 func (account Account) DisplayAccountNumber() {
-	accountNumber := randomdata.StringNumber(4, "")
-	fmt.Printf("Hey %v welcome once again to Go Loan Bank.\nYour phone number %v.\nHere is you account number: %v\n", account.Firstname, account.PhoneNumber, accountNumber)
+	// accountNumber := randomdata.StringNumber(4, "")
+	fmt.Printf("Hey %v welcome once again to Go Loan Bank.\nYour phone number %v.\nHere is you account number: %v\n", account.Firstname, account.PhoneNumber, account.AccountNumber)
 }
 
 func CheckPhoneNumber(phoneNumber string) error {
@@ -67,3 +66,4 @@ func (account Account) CheckLoanStatus() {
 		fmt.Printf("\n Hey %v below is your current loan status\nLoan status: %v \nCurrent loan amount: %v\n", account.Firstname, loanStatus, account.CurrentLoan)
 	}
 }
+

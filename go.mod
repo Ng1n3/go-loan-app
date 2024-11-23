@@ -1,4 +1,4 @@
-module example.com/loan
+module loan
 
 go 1.23.2
 

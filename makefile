@@ -6,6 +6,6 @@ fmt:
 vet: fmt
 	go vet ./main.go
 build: vet
-	go build -o example.com/loan ./main.go
+	go build -o loan ./main.go
 run: build
-	./example.com/loan
+	./loan
