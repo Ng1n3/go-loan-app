@@ -40,7 +40,7 @@ func WriteToFile(newAccountInfo account.Account) error {
 		return errors.New("failed to convert data to JSON")
 	}
 	return nil
-	
+
 }
 
 func CheckAccountByAccountNumber(accountNumber string) (*account.Account, error) {
@@ -99,10 +99,10 @@ func GetAcountNumberByFirstName(firstName string) (*account.Account, error) {
 }
 
 func DeleteAccountbyAccountNumber(accountNumber string) error {
-  data, err := os.ReadFile(filename)
+	data, err := os.ReadFile(filename)
 
 	if err != nil {
-		return  err
+		return err
 	}
 
 	// declare a slice to hold all accounts
@@ -111,7 +111,7 @@ func DeleteAccountbyAccountNumber(accountNumber string) error {
 	// Parse the JSON data into the slice
 	err = json.Unmarshal(data, &accounts)
 	if err != nil {
-		return  err
+		return err
 	}
 
 	var updatedAccounts []account.Account
@@ -144,7 +144,7 @@ func DeleteAccountbyAccountNumber(accountNumber string) error {
 	return nil
 }
 
-func UpdateAccount (updatedAccount account.Account) error {
+func UpdateAccount(updatedAccount account.Account) error {
 	data, err := os.ReadFile(filename)
 	if err != nil {
 		return err
@@ -163,7 +163,7 @@ func UpdateAccount (updatedAccount account.Account) error {
 		}
 	}
 
-	updatedData, err := json.MarshalIndent(accounts,"", " ")
+	updatedData, err := json.MarshalIndent(accounts, "", " ")
 	if err != nil {
 		return err
 	}
@@ -185,7 +185,7 @@ func GiveLoan(accountNumber string, loanAmount float64) error {
 
 	//check loan conditions
 	if acc.LoanStatus {
-		return errors.New("Loan cannot be issued: outstanding loans exists")
+		return errors.New("loan cannot be issued: outstanding loans exists")
 	}
 
 	if loanAmount > acc.LoanAmountAvailable {
@@ -204,5 +204,59 @@ func GiveLoan(accountNumber string, loanAmount float64) error {
 	}
 
 	fmt.Printf("Loan of %.2f granted successfully to %s.\n", loanAmount, acc.Firstname)
-return nil
+	return nil
+}
+
+func RepayLoan(accountNumber string, repayment float64) error {
+	// Check if given account is correct
+	acc, err := CheckAccountByAccountNumber(accountNumber)
+	if err != nil {
+		return fmt.Errorf("account not found: %w", err)
+	}
+
+	loanOwed := acc.CurrentLoan
+
+	// check loan conditions
+	if !acc.LoanStatus {
+		return errors.New("you have no outstanding loan")
+	}
+
+	if repayment-acc.CurrentLoan == 0 {
+		acc.LoanStatus = false
+		acc.LoanAmountAvailable = 5000
+		acc.CurrentLoan = 0
+		err = UpdateAccount(*acc)
+		if err != nil {
+			return fmt.Errorf("failed to update account: %w", err)
+		}
+		fmt.Printf("Outstanding loan of %v has been fully paid off, you can get another loan and this increases your chance of getting a higher loan\n", loanOwed)
+		return nil
+	}
+
+	if repayment-acc.CurrentLoan < 0 {
+		acc.LoanStatus = true
+		acc.LoanAmountAvailable -= repayment
+		acc.CurrentLoan -= repayment
+		fmt.Printf("You have paid off some of your loan. You still have an unpaid balance of %v. Please balance it as soon as possible so you can get higher loans in future\n", loanOwed)
+		err = UpdateAccount(*acc)
+		if err != nil {
+			return fmt.Errorf("failed to update account: %w", err)
+		}
+		return nil
+	}
+
+	if repayment-acc.CurrentLoan > 0 {
+		balance := repayment - acc.CurrentLoan
+		acc.LoanStatus = false
+		acc.LoanAmountAvailable = 5000
+		acc.CurrentLoan = 0
+		fmt.Printf("hey %v you are paying more than you owe, the balance of %v has been sent back to you\n", acc.Firstname, balance)
+		err = UpdateAccount(*acc)
+		if err != nil {
+			return fmt.Errorf("failed to update account: %w", err)
+		}
+		return nil
+	}
+
+	return nil
 }

@@ -86,6 +86,29 @@ func Choice() {
             if err != nil {
               fmt.Printf("error: %v\n", err)
             }
+        case 4:
+            accountNumber, err := getAccountDetails("Enter the account holder's account number to close: ")
+            if err != nil {
+                fmt.Printf("Error getting account number: %v\n", err)
+                continue
+            }
+
+            repaymentAmountStr, err := getAccountDetails("How much do you want to pay: ")
+            if err != nil {
+                fmt.Printf("error getting the required loan amount %v\n", err)
+                continue
+            }
+
+            repaymentAmount, err := strconv.ParseFloat(repaymentAmountStr, 64)
+            if err != nil || repaymentAmount <= 0 {
+                fmt.Println("Invalid amount entered")
+                continue
+            }
+
+            err = fileops.RepayLoan(accountNumber, repaymentAmount)
+            if err != nil {
+                fmt.Printf("error: %v\n", err)
+            }
 
 
         case 5:
